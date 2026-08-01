@@ -54,7 +54,7 @@
 
 (define-module (guix-codegraph packages codegraph)
   #:use-module (guix-codegraph packages node-codegraph-deps)
-  #:use-module (guix-codegraph packages node-runtime)  ; node-22.16.0
+  #:use-module (gnu packages node)            ; node-lts (>= 22.16: FTS5 in node:sqlite)
   #:use-module (gnu packages node-xyz)        ; node-jsonc-parser, node-typescript
   #:use-module (guix build-system node)
   #:use-module (guix git-download)
@@ -86,7 +86,7 @@
     (build-system node-build-system)
     (arguments
      (list
-      #:node node-22.16.0
+      #:node node-lts
       #:tests? #f
       #:phases
       #~(modify-phases %standard-phases
@@ -143,9 +143,9 @@
                                 "/lib/node_modules/@colbymchenry/codegraph"
                                 "/dist/bin/codegraph.js"))
                      ;; Resolved at gexp-lowering time; the store path is
-                     ;; embedded as a literal so the gc scanner keeps node-22.16.0
+                     ;; embedded as a literal so the gc scanner keeps node-lts
                      ;; in the closure of the codegraph package.
-                     (node-bin #$(file-append node-22.16.0 "/bin/node")))
+                     (node-bin #$(file-append node-lts "/bin/node")))
                 ;; Remove the node-build-system symlink; replace with wrapper.
                 (delete-file bin)
                 (call-with-output-file bin
