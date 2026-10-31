@@ -134,7 +134,7 @@
           ;; with a shell wrapper that:
           ;;   • passes --liftoff-only to Node (disables V8 turboshaft WASM JIT)
           ;;   • sets CODEGRAPH_TELEMETRY=0 unless the user has overridden it
-          (add-after 'install 'wrap-binary
+          (add-after 'link-bins 'wrap-binary
             (lambda* (#:key outputs #:allow-other-keys)
               (let* ((out      (assoc-ref outputs "out"))
                      (bin      (string-append out "/bin/codegraph"))
@@ -146,8 +146,13 @@
                      ;; embedded as a literal so the gc scanner keeps node-lts
                      ;; in the closure of the codegraph package.
                      (node-bin #$(file-append node-lts "/bin/node")))
-                ;; Remove the node-build-system symlink; replace with wrapper.
-                (delete-file bin)
+                ;; Replace node-build-system's bin symlink with the wrapper.
+                ;; node-build-system links package bins in its own `link-bins'
+                ;; phase (after `install' and `build-addon'), hence this phase
+                ;; runs after it; tolerate a package that declares no bin.
+                (mkdir-p (dirname bin))
+                (when (false-if-exception (lstat bin))
+                  (delete-file bin))
                 (call-with-output-file bin
                   (lambda (port)
                     (display
